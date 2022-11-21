@@ -1,0 +1,45 @@
+Resources:
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_email
+            Priority: 1
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: true
+      AutoVerifiedAttributes:
+        - email
+      UserPoolName: !Ref AWS::StackName
+      Schema:
+        - AttributeDataType: String
+          Name: email
+          Required: true
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      AllowedOAuthFlows:
+        - code
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthScopes:
+        - email
+        - openid
+        - profile
+      ClientName: !Sub '${AWS::StackName}-UserPool'
+      UserPoolId: !Ref UserPool
+      CallbackURLs: 
+        - 'https://example.com/callback'
+      LogoutURLs:
+        - 'https://example.com/logout'
+      DefaultRedirectURI: 'https://example.com/callback'
+      ExplicitAuthFlows:
+        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+      SupportedIdentityProviders:
+        - COGNITO
+      PreventUserExistenceErrors: ENABLED
+  UserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      Domain: !Ref UserPoolClient
+      UserPoolId: !Ref UserPool
